@@ -10,7 +10,6 @@ import dash_vega_components as dvc                                    # pip inst
 import altair as alt                        # pip install altair
 
 
-
 point_size = 20
 # Alexis datasets
 shelters = pd.read_pickle('../clean_datasets/shelters.pkl')
