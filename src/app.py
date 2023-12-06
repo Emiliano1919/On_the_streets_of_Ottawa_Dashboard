@@ -86,6 +86,12 @@ dropdown3 = dcc.Dropdown(options=['All',"Empty Map",'Assaults', 'Break and Enter
        'Other Cannabis Violations', 'Production', 'Sale'],
                         value='All',  # initial value displayed when page first loads
                         clearable=False)
+dropdown4 = dcc.Dropdown(options=['By days - (2017-2022)',"By days - before Covid",'By days - after Covid', 'By day of the week - (2017-2022)', 'By month - (2017-2022)'],
+                        value='By days - (2017-2022)',  # initial value displayed when page first loads
+                        clearable=False)
+dropdown5 = dcc.Dropdown(options=['By days - (2017-2022)',"By days - before Covid",'By days - after Covid', 'By day of the week - (2017-2022)', 'By month - (2017-2022)'],
+                        value='By days - (2017-2022)',  # initial value displayed when page first loads
+                        clearable=False)
 
 
 # Customize your own Layout
@@ -156,6 +162,10 @@ app.layout = dbc.Container([
                     'align-items': 'center',
                     'display': 'flex'})
     ], className="d-flex justify-content-evenly"),
+    dbc.Row([
+        dbc.Col([dropdown4], width=6),
+        dbc.Col([dropdown5], width=6)
+    ],align='center',className="pt-4"),
     
 
 ], fluid=True)
@@ -254,7 +264,7 @@ def update_graph(year,population,type):  # function arguments come from the comp
         alt.Chart(apts_tdy).mark_line(strokeDash=[4,4], width=.5, opacity=.5).encode(
             x=alt.X('date', title='Year'),
             y=alt.Y('med', title=''),
-            color=alt.Color('type', title='Median rent:').scale(scheme='Set1')
+            color=alt.Color('type', title='Median rent:')
         )
     )
     line = alt.Chart(pd.DataFrame({'y': [733]})).mark_rule(color='green', opacity=.5).encode(y='y')
@@ -468,4 +478,4 @@ def update_graph(year,population,type):  # function arguments come from the comp
 
 # Run app
 if __name__=='__main__':
-    app.run_server(debug=False, port=5500)
+    app.run_server(debug=True, port=5500)
