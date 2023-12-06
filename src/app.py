@@ -254,6 +254,19 @@ def update_graph(year,population,type):  # function arguments come from the comp
     textposition = "bottom right",
     visible='legendonly'))
 
+    new_police_station = pd.DataFrame({"y": [45.426788871368295], "x":[-75.69112349310356]})
+    police_new_center = go.Figure(go.Scattermapbox(
+    mode = "markers+text",
+    lon = new_police_station.x, lat = new_police_station.y,
+    marker=dict(
+                size= point_size,
+                color = 'brown',
+                opacity = .8
+            ),
+    name="New Police Station",
+    textposition = "bottom right",
+    visible='legendonly'))
+
     ##### Hospitals (kmeans)
     hospitals_kmeans = go.Figure(go.Scattermapbox(
     mode = "markers+text",
@@ -296,6 +309,8 @@ def update_graph(year,population,type):  # function arguments come from the comp
     ##
     fig_sca_geo.add_trace(police_centers_positions.data[0])
     fig_sca_geo.add_trace(police_centers_kmeans.data[0])
+    fig_sca_geo.add_trace(police_new_center.data[0])
+
     fig_sca_geo.add_trace(hospitals_position.data[0])
     fig_sca_geo.add_trace(hospitals_kmeans.data[0])
     fig_sca_geo.add_trace(hospitals_dbscan_then_kmeans.data[0])
