@@ -52,6 +52,7 @@ mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
 individuals_graph=dvc.Vega(id="altair-chart1", opt={"renderer": "svg", "actions": False}, spec={})
 shelters_graph=dvc.Vega(id="altair-chart2", opt={"renderer": "svg", "actions": False}, spec={})
+inflation_graph=dvc.Vega(id="altair-chart2bis", opt={"renderer": "svg", "actions": False}, spec={})
 overdose_calls_year=dvc.Vega(id="altair-chart3", opt={"renderer": "svg", "actions": False}, spec={})
 overdose_deaths_year=dvc.Vega(id="altair-chart4", opt={"renderer": "svg", "actions": False}, spec={})
 overdose_emergency_year=dvc.Vega(id="altair-chart5", opt={"renderer": "svg", "actions": False}, spec={})
@@ -105,25 +106,32 @@ app.layout = dbc.Container([
     #     dbc.Col(html.Div({},style={'text-align': 'center'}), width=6,id='title')
     # ], justify='center',align='center',className="pt-1 text-decoration-underline"),
     dbc.Row([
-        dbc.Col(html.H2("Shelter usage",style={'text-align': "center"}), width=12)
+        dbc.Col(html.H2("Homelessness",style={'text-align': "center"}), width=12)
     ], justify='center',align='center',className="pt-1"),
     dbc.Row([
-        dbc.Col([dropdown2], width=8),
-        dbc.Col([dropdown], width=4)
+        dbc.Col([dropdown2], width=6),
+        dbc.Col([dropdown], width=6)
     ],align='center',className="pt-4"),
     dbc.Row([
-        dbc.Col([individuals_graph], width=8,
+        dbc.Col([individuals_graph], width=6,
                 style ={
                     'align-self': 'center',
                     'justify-content': 'space-around',
                     'align-items': 'center',
                     'display': 'flex'}),
-        dbc.Col([shelters_graph], width=4,
+        dbc.Col([shelters_graph], width=3,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'},className="pt-1"),
+        dbc.Col([inflation_graph], width=3,
                 style ={
                     'align-self': 'center',
                     'justify-content': 'space-around',
                     'align-items': 'center',
                     'display': 'flex'},className="pt-1")
+
     ], className="justify-content-evenly"),
     dbc.Row([
         dbc.Col(html.H2("Overdoses",style={'text-align': "center"}), width=12)
@@ -157,6 +165,7 @@ app.layout = dbc.Container([
     Output(component_id='title', component_property='children'),
     Output(component_id="altair-chart1", component_property="spec"),
     Output(component_id="altair-chart2", component_property="spec"),
+    Output(component_id="altair-chart2bis", component_property="spec"),
     Output(component_id="altair-chart3", component_property="spec"),
     Output(component_id="altair-chart4", component_property="spec"),
     Output(component_id="altair-chart5", component_property="spec"),
@@ -206,11 +215,11 @@ def update_graph(year,population,type):  # function arguments come from the comp
             .encode(
                 column=alt.Column('Year', title=None, header=None),
                 x=alt.X('Category', title='').axis(labels=False),
-                y=alt.Y('mean(Count_)', title='Average headcount per month'),
+                y=alt.Y('mean(Count_)', title=None),
                 color=alt.Color('Category')
             )
             .mark_bar()
-            .properties(width=50)
+            .properties(width=45)
         )
 
         chart1_2 = (
@@ -218,7 +227,7 @@ def update_graph(year,population,type):  # function arguments come from the comp
                 column=alt.Column('Year', title=None, header=alt.Header(labelOrient='bottom')),
                 color=alt.Color('Category'),
                 theta='mean(Count_)'
-            ).properties(height=50, width=52)
+            ).properties(height=45, width=47)
         )
 
         chart = chart1_1 & chart1_2
@@ -229,10 +238,30 @@ def update_graph(year,population,type):  # function arguments come from the comp
         .mark_bar()
         .encode(
         x=alt.X('Date', title='Year'),
-        y=alt.Y('Count_', title='Headcount in shelters'),
+        y=alt.Y('Count_', title=None),
         color='Category'
         )
     )
+
+    mw_plot = (
+        alt.Chart(mw,
+            title='Evolution of Ontario minimum wage').mark_line(width=2, color='red').encode(
+        x=alt.X('month', title='Year'),
+        y=alt.Y('monthly_wage', title='Monthly amount in CAD (for 37.5 hrs/wk)')
+        ).interactive()
+    )
+    apts_tdy_plot = (
+        alt.Chart(apts_tdy).mark_line(strokeDash=[4,4], width=.5, opacity=.5).encode(
+            x=alt.X('date', title='Year'),
+            y=alt.Y('med', title=''),
+            color=alt.Color('type', title='Median rent:').scale(scheme='Set1')
+        )
+    )
+    line = alt.Chart(pd.DataFrame({'y': [733]})).mark_rule(color='green', opacity=.5).encode(y='y')
+    text1 = line.mark_text(text='Ontario Works maximum',dx=87, dy=10, color='green')
+    text2 = line.mark_text(text='pay nowadays',dx=112, dy=21, color='green')
+
+    chart2bis = mw_plot + apts_tdy_plot + line + text1 + text2
 
     chart3 = (
         alt.Chart(df4)
@@ -434,7 +463,7 @@ def update_graph(year,population,type):  # function arguments come from the comp
     #     None
     
 
-    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict(),chart3.to_dict(),chart4.to_dict(),chart5.to_dict()
+    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict(),chart2bis.to_dict(),chart3.to_dict(),chart4.to_dict(),chart5.to_dict()
 
 
 # Run app
