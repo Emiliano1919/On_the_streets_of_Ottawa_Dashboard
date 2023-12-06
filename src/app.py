@@ -14,17 +14,10 @@ point_size = 20
 # Alexis datasets
 shelters = pd.read_pickle('../clean_datasets/shelters.pkl')
 shelters_loc = pd.read_pickle('../clean_datasets/shelters_locations.pkl')
-
-
-individuals = shelters[(shelters['Category'] == 'Family Household Members') |
-                    (shelters['Category'] == 'Single Adult Females') |
-                    (shelters['Category'] == 'Single Adult Males') |
-                    (shelters['Category'] == 'Single Youth 18 Under')]
-
-indvd_year = individuals.copy()
-indvd_year['Year'] = indvd_year['Date'].apply(lambda x: x.strftime('%Y'))
-
-
+indvd_year = pd.read_pickle('../clean_datasets/graph_bars-and-pies_df.pkl')
+indvd_total_per_month_pred = pd.read_pickle('../clean_datasets/shelters_prediction.pkl')
+mw = pd.read_pickle('../clean_datasets/minimum_wage.pkl')
+apts_tdy = pd.read_pickle('../clean_datasets/apts_tdy.pkl')
 
 # to incorporate Kevins
 neighbourhood_loc = gpd.read_file("../clean_datasets/OPS_Neighbourhoods_Open_Data.geojson")
@@ -41,9 +34,6 @@ df = df[df.YEAR > 2015]
 df_categ = df_categ[df_categ.YEAR > 2015]
 
 hospitals = pd.read_pickle("../clean_datasets/hospitals.pkl")
-# to incorporate Alexis
-df2=indvd_year #This is the individuals
-df3=shelters
 
 # to incorporate overdoses
 overdose_calls = pd.read_csv('../clean_datasets/Overdose_calls.csv')
@@ -118,8 +108,8 @@ app.layout = dbc.Container([
         dbc.Col(html.H2("Shelter usage",style={'text-align': "center"}), width=12)
     ], justify='center',align='center',className="pt-1"),
     dbc.Row([
-        dbc.Col([dropdown2], width=6),
-        dbc.Col([dropdown], width=6)
+        dbc.Col([dropdown2], width=8),
+        dbc.Col([dropdown], width=4)
     ],align='center',className="pt-4"),
     dbc.Row([
         dbc.Col([individuals_graph], width=8,
@@ -185,24 +175,36 @@ def update_graph(year,population,type):  # function arguments come from the comp
 
     if year != 'All':
         df2 = df2[df2['Year'] == year]
-        chart = (
-        alt.Chart(df2,
-            title='Average number of individuals in shelters per month per category')
-        .encode(
-            column=alt.Column('Year'),
-            x=alt.X('Category', title='').axis(labels=False),
-            y=alt.Y('mean(Count_)', title='Average headcount per month'),
-            color=alt.Color('Category')
-        )
-        .mark_bar()
-        .properties(width=150)
-    )
-    else:
-        chart = (
+
+        chart1_1 = (
             alt.Chart(df2,
-                title='Average number of individuals in shelters per month per category')
+                title='Average number of individuals in shelters per month')
             .encode(
-                column=alt.Column('Year'),
+                column=alt.Column('Year', title=None, header=None),
+                y=alt.Y('Category', title='').axis(labels=False),
+                x=alt.X('mean(Count_)', title='Average headcount per month'),
+                color=alt.Color('Category')
+            )
+            .mark_bar()
+            .properties(height=150)
+        )
+
+        chart1_2 = (
+            alt.Chart(df2).mark_arc().encode(
+                column=alt.Column('Year', title=None, header=alt.Header(labelOrient='bottom')),
+                color=alt.Color('Category'),
+                theta='mean(Count_)'
+            ).properties(height=150, width=150)
+        )
+
+        chart = chart1_2 | chart1_1
+
+    else:
+        chart1_1 = (
+            alt.Chart(df2,
+                title='Average number of individuals in shelters per month')
+            .encode(
+                column=alt.Column('Year', title=None, header=None),
                 x=alt.X('Category', title='').axis(labels=False),
                 y=alt.Y('mean(Count_)', title='Average headcount per month'),
                 color=alt.Color('Category')
@@ -211,12 +213,23 @@ def update_graph(year,population,type):  # function arguments come from the comp
             .properties(width=50)
         )
 
+        chart1_2 = (
+            alt.Chart(df2).mark_arc().encode(
+                column=alt.Column('Year', title=None, header=alt.Header(labelOrient='bottom')),
+                color=alt.Color('Category'),
+                theta='mean(Count_)'
+            ).properties(height=50, width=52)
+        )
+
+        chart = chart1_1 & chart1_2
+
     chart2 = (
-        alt.Chart(df3)
+        alt.Chart(df3,
+          title="Number of individuals/families in shelters every month")
         .mark_bar()
         .encode(
         x=alt.X('Date', title='Year'),
-        y=alt.Y('sum(Count_)', title='Number of people'),
+        y=alt.Y('Count_', title='Headcount in shelters'),
         color='Category'
         )
     )
@@ -242,6 +255,7 @@ def update_graph(year,population,type):  # function arguments come from the comp
         )
         .properties(width=200)
     )
+
     chart5 = (
         alt.Chart(df6)
         .mark_bar()
