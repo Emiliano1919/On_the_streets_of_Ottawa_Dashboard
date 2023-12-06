@@ -122,17 +122,42 @@ app.layout = dbc.Container([
         dbc.Col([dropdown], width=6)
     ],align='center',className="pt-4"),
     dbc.Row([
-        dbc.Col([individuals_graph], width=8),
-        dbc.Col([shelters_graph], width=4)
+        dbc.Col([individuals_graph], width=8,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'}),
+        dbc.Col([shelters_graph], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'},className="pt-1")
     ], className="justify-content-evenly"),
     dbc.Row([
         dbc.Col(html.H2("Overdoses",style={'text-align': "center"}), width=12)
     ], justify='center',align='center',className="pt-1"),
     dbc.Row([
-        dbc.Col([overdose_calls_year], width=4),
-        dbc.Col([overdose_deaths_year], width=4),
-        dbc.Col([overdose_emergency_year], width=4)
-    ], className="justify-content-evenly"),
+        dbc.Col([overdose_calls_year], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'}),
+        dbc.Col([overdose_deaths_year], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'}),
+        dbc.Col([overdose_emergency_year], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'})
+    ], className="d-flex justify-content-evenly"),
     
 
 ], fluid=True)
