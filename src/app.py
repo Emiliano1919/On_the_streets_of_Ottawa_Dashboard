@@ -45,6 +45,11 @@ hospitals = pd.read_pickle("../clean_datasets/hospitals.pkl")
 df2=indvd_year #This is the individuals
 df3=shelters
 
+# to incorporate overdoses
+overdose_calls = pd.read_csv('../clean_datasets/Overdose_calls.csv')
+overdose_emergency_month = pd.read_csv('../clean_datasets/overdose_emergency_visits_by_month.csv')
+opioid_related_deaths= pd.read_csv('../clean_datasets/overdose_related_deaths.csv')
+
 # Build your components
 app = Dash(__name__, external_stylesheets=[dbc.themes.LUX],
     meta_tags=[
@@ -95,7 +100,7 @@ app.layout = dbc.Container([
     ], justify='center',align='center',className="pt-1 bg-dark"),
     dbc.Row([
         dbc.Col(html.Div({}), width=6,id='title')
-    ],justify='center',align='center',className="pt-4 text-decoration-underline"),
+    ],justify='center',align='center',className="pt-4"),
     dbc.Row([
         dbc.Col([dropdown3], width=6)
     ],className="pt-4 justify-content-center align-self-center"),
@@ -106,6 +111,9 @@ app.layout = dbc.Container([
     #     dbc.Col(html.Div({},style={'text-align': 'center'}), width=6,id='title')
     # ], justify='center',align='center',className="pt-1 text-decoration-underline"),
     dbc.Row([
+        dbc.Col(html.H2("Shelter usage",style={'text-align': "center"}), width=12)
+    ], justify='center',align='center',className="pt-1"),
+    dbc.Row([
         dbc.Col([dropdown2], width=6),
         dbc.Col([dropdown], width=6)
     ],align='center',className="pt-4"),
@@ -113,6 +121,9 @@ app.layout = dbc.Container([
         dbc.Col([individuals_graph], width=8),
         dbc.Col([shelters_graph], width=4)
     ], className="d-xl-flex"),
+    dbc.Row([
+        dbc.Col(html.H2("Overdoses",style={'text-align': "center"}), width=12)
+    ], justify='center',align='center',className="pt-1"),
     
 
 ], fluid=True)
