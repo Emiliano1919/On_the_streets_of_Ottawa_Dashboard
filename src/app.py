@@ -397,10 +397,10 @@ def update_graph(year,population,type,calls,calls2):  # function arguments come 
                 title='Overdose related deaths by quarter')
         .mark_bar()
         .encode(
-        x=alt.X('Quarter:O', title='Quarter',sort=quarters_order),
-        y=alt.Y('Confirmed_opioid_related_deaths:Q', title='Confirmed opioid related deaths'),
+        y=alt.Y('Quarter:O', title='Quarter',sort=quarters_order),
+        x=alt.X('Confirmed_opioid_related_deaths:Q', title='Confirmed opioid related deaths'),
         color=alt.Color('Quarter',title='Quarter')
-        ).properties(width=200)
+        ).properties(width=500,height=300)
         )
     
     if calls2== 'By quarter - (every year)':
