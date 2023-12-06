@@ -47,8 +47,9 @@ df3=shelters
 
 # to incorporate overdoses
 overdose_calls = pd.read_csv('../clean_datasets/Overdose_calls.csv')
-overdose_emergency_month = pd.read_csv('../clean_datasets/overdose_emergency_visits_by_month.csv')
 opioid_related_deaths= pd.read_csv('../clean_datasets/overdose_related_deaths.csv')
+overdose_emergency_month = pd.read_csv('../clean_datasets/overdose_emergency_visits_by_month.csv')
+
 
 # Build your components
 app = Dash(__name__, external_stylesheets=[dbc.themes.LUX],
@@ -61,6 +62,9 @@ mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
 individuals_graph=dvc.Vega(id="altair-chart1", opt={"renderer": "svg", "actions": False}, spec={})
 shelters_graph=dvc.Vega(id="altair-chart2", opt={"renderer": "svg", "actions": False}, spec={})
+overdose_calls_year=dvc.Vega(id="altair-chart3", opt={"renderer": "svg", "actions": False}, spec={})
+overdose_deaths_year=dvc.Vega(id="altair-chart4", opt={"renderer": "svg", "actions": False}, spec={})
+overdose_emergency_year=dvc.Vega(id="altair-chart5", opt={"renderer": "svg", "actions": False}, spec={})
 dropdown = dcc.Dropdown(options=['All Clients', 'All Singles', 'Family Household Members', 'Family Member', 'Offsite/Overflow Singles', 'Mens Shelter',
                                  'Womens Shelter', 'Mixed-Gender', 'Youth Shelter', 'Single Adult Males', 'Single Adult Females',
                                  'Single Youth 18 Under', 'Family Units', 'Family Households'],
@@ -120,10 +124,15 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([individuals_graph], width=8),
         dbc.Col([shelters_graph], width=4)
-    ], className="d-xl-flex"),
+    ], className="justify-content-evenly"),
     dbc.Row([
         dbc.Col(html.H2("Overdoses",style={'text-align': "center"}), width=12)
     ], justify='center',align='center',className="pt-1"),
+    dbc.Row([
+        dbc.Col([overdose_calls_year], width=4),
+        dbc.Col([overdose_deaths_year], width=4),
+        dbc.Col([overdose_emergency_year], width=4)
+    ], className="justify-content-evenly"),
     
 
 ], fluid=True)
@@ -133,6 +142,9 @@ app.layout = dbc.Container([
     Output(component_id='title', component_property='children'),
     Output(component_id="altair-chart1", component_property="spec"),
     Output(component_id="altair-chart2", component_property="spec"),
+    Output(component_id="altair-chart3", component_property="spec"),
+    Output(component_id="altair-chart4", component_property="spec"),
+    Output(component_id="altair-chart5", component_property="spec"),
     Input(dropdown2, 'value'),
     Input(dropdown, 'value'),
     Input(dropdown3,'value'),
@@ -142,6 +154,9 @@ app.layout = dbc.Container([
 def update_graph(year,population,type):  # function arguments come from the component property of the Input
     df2=indvd_year
     df3=shelters[shelters['Category']==population]
+    df4=overdose_calls
+    df5=opioid_related_deaths
+    df6=overdose_emergency_month
 
     if year != 'All':
         df2 = df2[df2['Year'] == year]
@@ -155,7 +170,6 @@ def update_graph(year,population,type):  # function arguments come from the comp
         )
         .mark_bar()
         .properties(width=150)
-        .interactive()
     )
     else:
         chart = (
@@ -168,7 +182,6 @@ def update_graph(year,population,type):  # function arguments come from the comp
             )
             .mark_bar()
             .properties(width=50)
-            .interactive()
         )
 
     chart2 = (
@@ -180,6 +193,39 @@ def update_graph(year,population,type):  # function arguments come from the comp
         color='Category'
         )
     )
+
+    chart3 = (
+        alt.Chart(df4)
+        .mark_bar()
+        .encode(
+        x=alt.X('YEAR:O', title='Year'),
+        y=alt.Y('count():Q', title='Number of calls').scale(domain=(0, 1100)),
+        color=alt.Color('NARCAN_ADM:N',title='Narcan Administered')
+        )
+        .properties(width=200)
+    )
+
+    chart4 = (
+        alt.Chart(df5)
+        .mark_bar()
+        .encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('Confirmed_opioid_related_deaths:Q', title='Confirmed opioid related deaths').scale(domain=(0, 1100)),
+        color=alt.Color('Quarter:O',title='Quarter')
+        )
+        .properties(width=200)
+    )
+    chart5 = (
+        alt.Chart(df6)
+        .mark_bar()
+        .encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('Total ED visits for opioid overdose:Q', title='Number of individuals'),
+        )
+        .properties(width=200)
+    )
+
+
 
     if type != 'All':
         fig_sca_geo = px.scatter_mapbox(df_categ[df_categ['OFF_CATEG']==type].sort_values("YEAR"),
@@ -347,7 +393,7 @@ def update_graph(year,population,type):  # function arguments come from the comp
     #     None
     
 
-    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict()
+    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict(),chart3.to_dict(),chart4.to_dict(),chart5.to_dict()
 
 
 # Run app
