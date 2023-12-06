@@ -37,6 +37,9 @@ hospitals_clusters = pd.read_pickle("../clusters/hospitals_clusters.pkl")
 hospitals_dbscan = pd.read_pickle("../clusters/hospitals_dbscan.pkl")
 police_clusters = pd.read_pickle("../clusters/police_clusters")
 
+df = df[df.YEAR > 2015]
+df_categ = df_categ[df_categ.YEAR > 2015]
+
 hospitals = pd.read_pickle("../clean_datasets/hospitals.pkl")
 # to incorporate Alexis
 df2=indvd_year #This is the individuals
