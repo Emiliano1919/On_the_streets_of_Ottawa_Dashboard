@@ -46,7 +46,11 @@ df2=indvd_year #This is the individuals
 df3=shelters
 
 # Build your components
-app = Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+app = Dash(__name__, external_stylesheets=[dbc.themes.LUX],
+    meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ],
+    )
 server = app.server
 mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
@@ -108,7 +112,7 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([individuals_graph], width=8),
         dbc.Col([shelters_graph], width=4)
-    ]),
+    ], className="d-xl-flex"),
     
 
 ], fluid=True)
