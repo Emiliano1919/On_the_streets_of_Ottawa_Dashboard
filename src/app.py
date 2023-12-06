@@ -161,11 +161,12 @@ def update_graph(year,population,type):  # function arguments come from the comp
     if year != 'All':
         df2 = df2[df2['Year'] == year]
         chart = (
-        alt.Chart(df2)
+        alt.Chart(df2,
+            title='Average number of individuals in shelters per month per category')
         .encode(
             column=alt.Column('Year'),
             x=alt.X('Category', title='').axis(labels=False),
-            y=alt.Y('Count_', title='Number of individuals'),
+            y=alt.Y('mean(Count_)', title='Average headcount per month'),
             color=alt.Color('Category')
         )
         .mark_bar()
@@ -173,11 +174,12 @@ def update_graph(year,population,type):  # function arguments come from the comp
     )
     else:
         chart = (
-            alt.Chart(df2)
+            alt.Chart(df2,
+                title='Average number of individuals in shelters per month per category')
             .encode(
                 column=alt.Column('Year'),
                 x=alt.X('Category', title='').axis(labels=False),
-                y=alt.Y('Count_', title='Number of individuals'),
+                y=alt.Y('mean(Count_)', title='Average headcount per month'),
                 color=alt.Color('Category')
             )
             .mark_bar()
