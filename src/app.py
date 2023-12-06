@@ -40,6 +40,10 @@ overdose_calls = pd.read_csv('../clean_datasets/Overdose_calls.csv')
 opioid_related_deaths= pd.read_csv('../clean_datasets/overdose_related_deaths.csv')
 overdose_emergency_month = pd.read_csv('../clean_datasets/overdose_emergency_visits_by_month.csv')
 
+# to incorporate overdoses calls
+overdose_calls_postCovid = overdose_calls[overdose_calls['YEAR']>=2020]
+overdose_calls_preCovid = overdose_calls[overdose_calls['YEAR']<2020]
+
 
 # Build your components
 app = Dash(__name__, external_stylesheets=[dbc.themes.LUX],
@@ -56,6 +60,8 @@ inflation_graph=dvc.Vega(id="altair-chart2bis", opt={"renderer": "svg", "actions
 overdose_calls_year=dvc.Vega(id="altair-chart3", opt={"renderer": "svg", "actions": False}, spec={})
 overdose_deaths_year=dvc.Vega(id="altair-chart4", opt={"renderer": "svg", "actions": False}, spec={})
 overdose_emergency_year=dvc.Vega(id="altair-chart5", opt={"renderer": "svg", "actions": False}, spec={})
+overdose_calls_time=dvc.Vega(id="altair-chart6", opt={"renderer": "svg", "actions": False}, spec={})
+overdose_deaths_quarter=dvc.Vega(id="altair-chart7", opt={"renderer": "svg", "actions": False}, spec={})
 dropdown = dcc.Dropdown(options=['All Clients', 'All Singles', 'Family Household Members', 'Family Member', 'Offsite/Overflow Singles', 'Mens Shelter',
                                  'Womens Shelter', 'Mixed-Gender', 'Youth Shelter', 'Single Adult Males', 'Single Adult Females',
                                  'Single Youth 18 Under', 'Family Units', 'Family Households'],
@@ -89,8 +95,8 @@ dropdown3 = dcc.Dropdown(options=['All',"Empty Map",'Assaults', 'Break and Enter
 dropdown4 = dcc.Dropdown(options=['By days - (2017-2022)',"By days - before Covid",'By days - after Covid', 'By day of the week - (2017-2022)', 'By month - (2017-2022)'],
                         value='By days - (2017-2022)',  # initial value displayed when page first loads
                         clearable=False)
-dropdown5 = dcc.Dropdown(options=['By days - (2017-2022)',"By days - before Covid",'By days - after Covid', 'By day of the week - (2017-2022)', 'By month - (2017-2022)'],
-                        value='By days - (2017-2022)',  # initial value displayed when page first loads
+dropdown5 = dcc.Dropdown(options=['By quarter - (2017-2022)','By quarter - (every year)'],
+                        value='By quarter - (2017-2022)',  # initial value displayed when page first loads
                         clearable=False)
 
 
@@ -161,11 +167,25 @@ app.layout = dbc.Container([
                     'justify-content': 'space-around',
                     'align-items': 'center',
                     'display': 'flex'})
-    ], className="d-flex justify-content-evenly"),
+    ], className="d-flex justify-content-evenly pt-4"),
     dbc.Row([
         dbc.Col([dropdown4], width=6),
         dbc.Col([dropdown5], width=6)
     ],align='center',className="pt-4"),
+    dbc.Row([
+        dbc.Col([overdose_calls_time], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'}),
+        dbc.Col([overdose_deaths_quarter], width=4,
+                style ={
+                    'align-self': 'center',
+                    'justify-content': 'space-around',
+                    'align-items': 'center',
+                    'display': 'flex'}),
+    ], className="d-flex justify-content-evenly pt-4"),
     
 
 ], fluid=True)
@@ -179,18 +199,27 @@ app.layout = dbc.Container([
     Output(component_id="altair-chart3", component_property="spec"),
     Output(component_id="altair-chart4", component_property="spec"),
     Output(component_id="altair-chart5", component_property="spec"),
+    Output(component_id="altair-chart6", component_property="spec"),
+    Output(component_id="altair-chart7", component_property="spec"),
     Input(dropdown2, 'value'),
     Input(dropdown, 'value'),
     Input(dropdown3,'value'),
+    Input(dropdown4,'value'),
+    Input(dropdown5,'value'),
 )
 
 
-def update_graph(year,population,type):  # function arguments come from the component property of the Input
+def update_graph(year,population,type,calls,calls2):  # function arguments come from the component property of the Input
     df2=indvd_year
     df3=shelters[shelters['Category']==population]
     df4=overdose_calls
+    df4_preCovid=overdose_calls_preCovid
+    df4_postCovid=overdose_calls_postCovid
     df5=opioid_related_deaths
     df6=overdose_emergency_month
+    quarters_order = ["Q1", "Q2", "Q3", "Q4"]
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
 
     if year != 'All':
         df2 = df2[df2['Year'] == year]
@@ -274,7 +303,8 @@ def update_graph(year,population,type):  # function arguments come from the comp
     chart2bis = mw_plot + apts_tdy_plot + line + text1 + text2
 
     chart3 = (
-        alt.Chart(df4)
+        alt.Chart(df4,
+                title='Emergency calls received related to overdoses')
         .mark_bar()
         .encode(
         x=alt.X('YEAR:O', title='Year'),
@@ -285,7 +315,8 @@ def update_graph(year,population,type):  # function arguments come from the comp
     )
 
     chart4 = (
-        alt.Chart(df5)
+        alt.Chart(df5,
+                title='Overdose related deaths of ottawa residents')
         .mark_bar()
         .encode(
         x=alt.X('Year:O', title='Year'),
@@ -296,7 +327,8 @@ def update_graph(year,population,type):  # function arguments come from the comp
     )
 
     chart5 = (
-        alt.Chart(df6)
+        alt.Chart(df6,
+                title='Overdose emergency deparment visits')
         .mark_bar()
         .encode(
         x=alt.X('Year:O', title='Year'),
@@ -305,6 +337,86 @@ def update_graph(year,population,type):  # function arguments come from the comp
         .properties(width=200)
     )
 
+    if calls== 'By days - (2017-2022)':
+        chart6 = (
+        alt.Chart(df4,
+                title='Received calls by days')
+        .mark_bar()
+        .encode(
+        x=alt.X('DAY:O', title='Day number'),
+        y=alt.Y('count():Q', title='Number of calls'),
+        )
+        )
+        
+    if calls== "By days - before Covid":
+        chart6 = (
+        alt.Chart(df4_preCovid,
+                title='Received calls by days before Covid')
+        .mark_bar()
+        .encode(
+        x=alt.X('DAY:O', title='Day number'),
+        y=alt.Y('count():Q', title='Number of calls'),
+        )
+        )
+
+    if calls== "By days - after Covid":
+        chart6 = (
+        alt.Chart(df4_postCovid,
+                title='Received calls by days after Covid')
+        .mark_bar()
+        .encode(
+        x=alt.X('DAY:O', title='Day number'),
+        y=alt.Y('count():Q', title='Number of calls'),
+        )
+        )
+        
+    if calls== "By day of the week - (2017-2022)":
+        chart6 = (
+        alt.Chart(df4_postCovid,
+                title='Received calls by day of the week')
+        .mark_bar()
+        .encode(
+        x=alt.X('DOW', title='Day of the week',sort=days_order),
+        y=alt.Y('count()', title='Number of calls'),
+        ).properties(width=200)
+        )
+
+    if calls== "By month - (2017-2022)":
+        chart6 = (
+        alt.Chart(df4,
+                title='Received calls by month')
+        .mark_bar()
+        .encode(
+        x=alt.X('MONTH:O', title='Months of the year'),
+        y=alt.Y('count()', title='Number of calls'),
+        ).properties(width=300)
+        )
+    if calls2== 'By quarter - (2017-2022)':
+        chart7 = (
+        alt.Chart(df5,
+                title='Overdose related deaths by quarter')
+        .mark_bar()
+        .encode(
+        x=alt.X('Quarter:O', title='Quarter',sort=quarters_order),
+        y=alt.Y('Confirmed_opioid_related_deaths:Q', title='Confirmed opioid related deaths'),
+        color=alt.Color('Quarter',title='Quarter')
+        ).properties(width=200)
+        )
+    
+    if calls2== 'By quarter - (every year)':
+        chart7 = (
+        alt.Chart(df5,
+                title='Overdose related deaths by quarter every year')
+        .mark_bar()
+        .encode(
+        column=alt.Column('Year'),
+        x=alt.X('Quarter:O', title='Quarter',sort=quarters_order),
+        y=alt.Y('Confirmed_opioid_related_deaths:Q', title='Confirmed opioid related deaths'),
+        color=alt.Color('Quarter',title='Quarter')
+        )
+        )
+
+    
 
 
     if type != 'All':
@@ -473,9 +585,9 @@ def update_graph(year,population,type):  # function arguments come from the comp
     #     None
     
 
-    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict(),chart2bis.to_dict(),chart3.to_dict(),chart4.to_dict(),chart5.to_dict()
+    return fig_sca_geo, [html.H2 (type+' crimes in Ottawa',style={'text-align': "center"})], chart.to_dict(),chart2.to_dict(),chart2bis.to_dict(),chart3.to_dict(),chart4.to_dict(),chart5.to_dict(),chart6.to_dict(),chart7.to_dict()
 
 
 # Run app
 if __name__=='__main__':
-    app.run_server(debug=True, port=5500)
+    app.run_server(debug=False, port=5500)
