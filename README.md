@@ -3,11 +3,6 @@ This is an interactive dashboard that sheds light on the development of crime, h
 
 Here you can see the main page of the dashboard, which includes an interactive map with the results of our clustering (k-means and dbscan) of the crime datasets. You can also select a specific type of crime to be displayed.
 
-[![Main page](./videos/MainPage.mov)]
-
-
-Here you can see the rest of the dashboard.
-
-[![Main page](./videos/Dashboard%20Recording.mov)]
+[![Main page](./videos/ShorterVideo.mov)]
 
 ***This dashboard was made for the accompanying project On the streets of Ottawa by Emiliano Jimenez, Kevin Tawadros and Alexis Taillardat.***
